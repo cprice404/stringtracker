@@ -1,0 +1,86 @@
+#!/bin/bash
+#
+# gets the strings from all clj files within current directory
+# outputs into a file listing all files and strings
+
+
+#these are global variables
+formatfile=''
+writefile='false'
+outputfile='out-strings.txt'
+interactive='false'
+suppress='false'
+complete=''
+incomplete=''
+
+usage () {
+    printf 'USAGE:\n'
+    printf '\t%s -f format filename [ -o output filename -i -s]\n' $0
+    printf '\twrite all strings and their locations that match the formats\n'
+    printf '\tin the given format file (if given), otherwise prints to terminal\n'
+    printf '\nAlso prints an approximate status of i18n strings'
+    printf '\nRequired arguments\n'        
+    printf '\t\055f format filename\n'
+    printf '\nOptional arguments\n'
+    printf '\t\055o, send found strings to output file\n'
+    printf '\t\055i, interactive editing mode (CURRENTLY DOES NOT WORK)\n'
+    printf '\t\055s, suppress all output of strings\n'
+    printf '\t\055h help, print usage information\n'
+}
+
+main () {
+    
+    if [ "$suppress" == 'false' ]; then
+        if [ "$writefile" == 'true' ]; then
+            grep -r -in -f $formatfile --include \*.clj > $outputfile
+            printf 'Wrote strings to output file\n'
+        else
+            grep -r -in -f $formatfile --include \*.clj --color=always
+        fi
+
+        if [ "$interactive" == 'true' ]; then
+           # cat $formatfile | xargs -I foo codemod --extensions clj "foo" "trs"
+            printf 'Interactive editing coming soon...'
+        fi
+    fi
+
+    incomplete=`grep -r -in -f $formatfile --include \*.clj | wc -l`
+    complete=`grep -r -in --include \*.clj '(trs \|(tru ' | wc -l`
+
+    printf '\n\n---------------------------------------\n'
+    printf 'Number of translated strings: %s\n' $complete
+    printf 'Number of untranslated strings: %s\n' $incomplete
+}
+
+# code begins here -- process command line options and args
+while getopts "f:o:ic" opt; do
+
+        case $opt in
+        h) usage 
+           exit     
+           ;;
+        i) interactive="true"
+           ;;
+        f) formatfile=$OPTARG
+           ;;
+        o) outputfile=$OPTARG
+           writefile="true"
+           ;;
+        s) suppress="true"
+           ;;
+        esac
+
+done
+
+# error processing -- filename is required 
+# check to see it is not 
+# an empty string
+if [ -z $formatfile ]; then
+        printf '\nUsage ERROR: \055f format file required\n\n'
+        usage
+        exit 1 
+fi
+
+# call main
+main
+exit 0
