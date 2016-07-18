@@ -32,10 +32,10 @@ main () {
     
     if [ "$suppress" == 'false' ]; then
         if [ "$writefile" == 'true' ]; then
-            grep -r -in -f $formatfile --include \*.clj > $outputfile
+            grep -r -in -f $formatfile --include \*.clj . > $outputfile
             printf 'Wrote strings to output file\n'
         else
-            grep -r -in -f $formatfile --include \*.clj --color=always
+            grep -r -in -f $formatfile --include \*.clj --color=always .
         fi
 
         if [ "$interactive" == 'true' ]; then
@@ -44,8 +44,8 @@ main () {
         fi
     fi
 
-    incomplete=`grep -r -in -f $formatfile --include \*.clj | wc -l`
-    complete=`grep -r -in --include \*.clj '(trs \|(tru ' | wc -l`
+    incomplete=`grep -r -in -f $formatfile --include \*.clj . | wc -l`
+    complete=`grep -r -in --include \*.clj '(trs \|(tru ' . | wc -l`
 
     printf '\n\n---------------------------------------\n'
     printf 'Number of translated strings: %s\n' $complete
