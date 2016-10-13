@@ -12,15 +12,17 @@ interactive='false'
 suppress='false'
 complete=''
 incomplete=''
+targetdir=''
 
 usage () {
     printf 'USAGE:\n'
-    printf '\t%s -f format filename [ -o output filename -i -s]\n' $0
+    printf '\t%s -f <format filename> -t <target dir> [ -o <output filename> -i -s]\n' $0
     printf '\twrite all strings and their locations that match the formats\n'
     printf '\tin the given format file (if given), otherwise prints to terminal\n'
     printf '\nAlso prints an approximate status of i18n strings'
     printf '\nRequired arguments\n'        
     printf '\t\055f format filename\n'
+    printf '\t\055t target directory\n'
     printf '\nOptional arguments\n'
     printf '\t\055o, send found strings to output file\n'
     printf '\t\055i, interactive editing mode (CURRENTLY DOES NOT WORK)\n'
@@ -32,10 +34,10 @@ main () {
     
     if [ "$suppress" == 'false' ]; then
         if [ "$writefile" == 'true' ]; then
-            grep -r -in -f $formatfile --include \*.clj . > $outputfile
+            grep -r -in -f $formatfile --include \*.clj $targetdir > $outputfile
             printf 'Wrote strings to output file\n'
         else
-            grep -r -in -f $formatfile --include \*.clj --color=always .
+            grep -r -in -f $formatfile --include \*.clj --color=always $targetdir
         fi
 
         if [ "$interactive" == 'true' ]; then
@@ -44,8 +46,8 @@ main () {
         fi
     fi
 
-    incomplete=`grep -r -in -f $formatfile --include \*.clj . | wc -l`
-    complete=`grep -r -in --include \*.clj '(trs \|(tru ' . | wc -l`
+    incomplete=`grep -r -in -f $formatfile --include \*.clj $targetdir | wc -l`
+    complete=`grep -r -in --include \*.clj '(trs \|(tru ' $targetdir | wc -l`
 
     printf '\n\n---------------------------------------\n'
     printf 'Number of translated strings: %s\n' $complete
@@ -53,7 +55,7 @@ main () {
 }
 
 # code begins here -- process command line options and args
-while getopts "f:o:ic" opt; do
+while getopts "f:t:o:ic" opt; do
 
         case $opt in
         h) usage 
@@ -68,6 +70,8 @@ while getopts "f:o:ic" opt; do
            ;;
         s) suppress="true"
            ;;
+        t) targetdir=$OPTARG
+           ;;
         esac
 
 done
@@ -77,6 +81,12 @@ done
 # an empty string
 if [ -z $formatfile ]; then
         printf '\nUsage ERROR: \055f format file required\n\n'
+        usage
+        exit 1 
+fi
+
+if [ -z $targetdir ]; then
+        printf '\nUsage ERROR: \055t target dir required\n\n'
         usage
         exit 1 
 fi
