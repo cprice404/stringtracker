@@ -26,7 +26,9 @@ rescue OptionParser::InvalidOption, OptionParser::MissingArgument
 end
 
 STRING_MARKERS_REGEX = %r{^(.*)(\(log/|\(str\s|\(format\s|\([\w]+\. ")(.*)$}
-I18N_MARKERS_REGEX = %r{\((i18n\/)?(tru|trs) }
+I18N_MARKERS_REGEX = %r{\((?:i18n\/)?(?:tru|trs)\s}
+I18N_QUOTED_TEXT_REGEX = %r{\((?:i18n\/)?(?:tru|trs)\s+"(.*)"[^"]+$}
+I18N_BAD_SINGLE_QUOTE_REGEX = %r{(?<!')('[^'])}
 
 num_translated = 0
 num_untranslated = 0
@@ -48,6 +50,17 @@ Dir.glob(File.join(options[:target_dir], "**", "*.clj")).each do |path|
         end
       elsif i18n_match
         num_translated += 1
+      end
+      if i18n_match
+        quoted_text_match = line.match(I18N_QUOTED_TEXT_REGEX)
+        unless quoted_text_match
+          raise "Uh-oh; couldn't find quoted text for line, probably means I18N_QUOTED_TEXT_REGEX is bad:\n#{line}"
+        end
+        bad_single_quote_match = quoted_text_match[0].match(I18N_BAD_SINGLE_QUOTE_REGEX)
+        if bad_single_quote_match
+          puts "#{"Possible unescaped single quote".light_red}: #{path.light_magenta}#{":".light_cyan}#{line_num.to_s.green}#{":".light_cyan}"
+          puts line.gsub(I18N_BAD_SINGLE_QUOTE_REGEX, "\\1".light_red)
+        end
       end
     end
   end
