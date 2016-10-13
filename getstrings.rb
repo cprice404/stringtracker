@@ -36,10 +36,9 @@ Dir.glob(File.join(options[:target_dir], "**", "*.clj")).each do |path|
     line_num = 0
     f.each_line do |line|
       line_num += 1
-      # puts "LOOKING AT LINE: #{line.green}"
       match = line.match(STRING_MARKERS_REGEX)
+      i18n_match = line.match(I18N_MARKERS_REGEX)
       if match
-        i18n_match = line.match(I18N_MARKERS_REGEX)
         if i18n_match
           num_translated += 1
         else
@@ -47,6 +46,8 @@ Dir.glob(File.join(options[:target_dir], "**", "*.clj")).each do |path|
           puts "#{path.light_magenta}#{":".light_cyan}#{line_num.to_s.green}#{":".light_cyan}"
           puts "#{match[1]}#{match[2].light_red}#{match[3]}"
         end
+      elsif i18n_match
+        num_translated += 1
       end
     end
   end
