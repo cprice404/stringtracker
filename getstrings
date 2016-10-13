@@ -47,7 +47,8 @@ main () {
     fi
 
     incomplete=`grep -r -in -f $formatfile --include \*.clj $targetdir | wc -l`
-    complete=`grep -r -in --include \*.clj '(trs \|(tru ' $targetdir | wc -l`
+    #incomplete=`grep -r -in -f $formatfile --include \*.clj -v '(trs \|(tru \|(i18n/trs \|(i18n/tru ' $targetdir | wc -l`
+    complete=`grep -r -in --include \*.clj '(trs \|(tru \|(i18n/trs \|(i18n/tru ' $targetdir | wc -l`
 
     printf '\n\n---------------------------------------\n'
     printf 'Number of translated strings: %s\n' $complete
